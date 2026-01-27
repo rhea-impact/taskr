@@ -32,6 +32,35 @@ It's a low-opinionated way to keep projects organized using the best coding agen
 
 ---
 
+## Taskr Learns Over Time
+
+<p align="center">
+  <img src="assets/memory-system.png" alt="Taskr Memory System" width="600">
+</p>
+
+The secret sauce? **Devlogs.**
+
+Every time Claude makes a decision, fixes a bug, or learns something about your codebase, Taskr records it. These aren't just logs—they're **persistent AI memory** that survives across sessions, context windows, and even different Claude instances.
+
+This means:
+- 🧠 **Claude remembers** what worked (and what didn't) in your codebase
+- 🔍 **Searchable history** of every architectural decision, bugfix, and pattern
+- 📚 **Institutional knowledge** that doesn't walk out the door when a session ends
+- ⚡ **Faster ramp-up** when Claude starts a new session—it can search devlogs first
+
+### Coming Soon: Deep Sleep with taskr-worker
+
+For pro teams, we're building **taskr-worker**—a background service that runs during off-hours to:
+
+- 🌙 **Consolidate memory** - Summarize and compress devlogs while preserving key insights
+- 🧹 **Trim what doesn't matter** - Automatically archive stale or low-value entries
+- 🔗 **Build connections** - Link related devlogs, issues, and decisions together
+- 📈 **Improve over time** - The more you use Taskr, the smarter it gets
+
+*More details coming soon. For now, devlogs alone will transform how Claude Code works on your projects.*
+
+---
+
 ## Features
 
 - **Task Management** - Create, track, and search tasks with full CRUD operations
