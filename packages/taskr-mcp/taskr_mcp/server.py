@@ -807,6 +807,96 @@ async def taskr_sql_query(
 
 
 @mcp.tool()
+async def taskr_sql_explain(
+    query: str,
+    params: Optional[List[str]] = None,
+    analyze: bool = True,
+) -> dict:
+    """
+    Analyze query performance using EXPLAIN.
+
+    Returns the query execution plan to help identify slow queries,
+    missing indexes, and optimization opportunities.
+
+    Args:
+        query: SQL query to analyze (SELECT only)
+        params: Optional query parameters
+        analyze: If True, actually runs the query for real timing (default True).
+                 Set to False for just the plan without execution.
+
+    Returns:
+        Query plan with cost estimates, actual times (if analyze=True), and suggestions
+    """
+    await ensure_initialized()
+    from taskr.db import get_adapter
+
+    adapter = get_adapter()
+
+    # Only allow SELECT queries
+    query_upper = query.strip().upper()
+    if not query_upper.startswith("SELECT") and not query_upper.startswith("WITH"):
+        return {"error": "EXPLAIN only works with SELECT queries"}
+
+    # SQLite doesn't support EXPLAIN ANALYZE the same way
+    if not adapter.supports_fts:
+        # SQLite version - simpler EXPLAIN
+        try:
+            explain_query = f"EXPLAIN QUERY PLAN {query}"
+            rows = await adapter.fetch(explain_query, *(params or []))
+            return {
+                "database": "sqlite",
+                "plan": rows,
+                "note": "SQLite EXPLAIN is limited. For detailed analysis, use PostgreSQL.",
+            }
+        except Exception as e:
+            return {"error": f"EXPLAIN failed: {str(e)}"}
+
+    # PostgreSQL version - full EXPLAIN ANALYZE
+    try:
+        if analyze:
+            explain_query = f"EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) {query}"
+        else:
+            explain_query = f"EXPLAIN (FORMAT JSON) {query}"
+
+        rows = await adapter.fetch(explain_query, *(params or []))
+
+        if rows and rows[0]:
+            plan = rows[0].get("QUERY PLAN", rows[0])
+
+            # Extract key metrics from the plan
+            suggestions = []
+            if isinstance(plan, list) and plan:
+                root = plan[0]
+                if isinstance(root, dict):
+                    planning_time = root.get("Planning Time", 0)
+                    execution_time = root.get("Execution Time", 0)
+                    total_time = planning_time + execution_time
+
+                    # Analyze the plan for issues
+                    plan_str = str(root)
+                    if "Seq Scan" in plan_str:
+                        suggestions.append("Sequential scan detected - consider adding an index")
+                    if "Sort" in plan_str and "Sort Method: external" in plan_str:
+                        suggestions.append("External sort detected - consider increasing work_mem or adding index")
+                    if total_time > 1000:
+                        suggestions.append(f"Query took {total_time:.0f}ms - consider optimization")
+                    if total_time > 100:
+                        suggestions.append("Query > 100ms - check if indexes are being used")
+
+            return {
+                "database": "postgres",
+                "analyze": analyze,
+                "plan": plan,
+                "suggestions": suggestions if suggestions else ["Query plan looks reasonable"],
+            }
+
+        return {"plan": rows}
+
+    except Exception as e:
+        return {"error": f"EXPLAIN failed: {str(e)}"}
+
+
+@mcp.tool()
 async def taskr_sql_migrate(
     sql: str,
     reason: str,
