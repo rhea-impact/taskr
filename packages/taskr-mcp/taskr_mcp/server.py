@@ -6,10 +6,8 @@ AI-native task management MCP server with support for PostgreSQL and SQLite.
 
 import asyncio
 import logging
-import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
 
 from mcp.server.fastmcp import FastMCP
 
@@ -28,8 +26,8 @@ async def ensure_initialized():
     if _initialized:
         return
 
-    from taskr.db import init_adapter
     from taskr.config import load_config
+    from taskr.db import init_adapter
 
     config = load_config()
     adapter = await init_adapter(config)
@@ -43,7 +41,6 @@ async def ensure_initialized():
 
 async def run_migrations(adapter):
     """Run pending database migrations."""
-    from taskr.config import CONFIG_DIR
 
     # Determine migration path based on adapter type
     if adapter.supports_fts:  # PostgreSQL
@@ -98,9 +95,9 @@ async def run_migrations(adapter):
 
 @mcp.tool()
 async def taskr_list(
-    status: Optional[str] = None,
-    priority: Optional[str] = None,
-    assignee: Optional[str] = None,
+    status: str | None = None,
+    priority: str | None = None,
+    assignee: str | None = None,
     limit: int = 50,
 ) -> dict:
     """
@@ -135,11 +132,11 @@ async def taskr_list(
 @mcp.tool()
 async def taskr_create(
     title: str,
-    description: Optional[str] = None,
+    description: str | None = None,
     status: str = "open",
     priority: str = "medium",
-    assignee: Optional[str] = None,
-    tags: Optional[List[str]] = None,
+    assignee: str | None = None,
+    tags: list[str] | None = None,
 ) -> dict:
     """
     Create a new task.
@@ -156,8 +153,8 @@ async def taskr_create(
         Created task details
     """
     await ensure_initialized()
-    from taskr.services import TaskService
     from taskr.config import get_config
+    from taskr.services import TaskService
 
     config = get_config()
     service = TaskService()
@@ -201,12 +198,12 @@ async def taskr_show(task_id: str) -> dict:
 @mcp.tool()
 async def taskr_update(
     task_id: str,
-    title: Optional[str] = None,
-    description: Optional[str] = None,
-    status: Optional[str] = None,
-    priority: Optional[str] = None,
-    assignee: Optional[str] = None,
-    tags: Optional[List[str]] = None,
+    title: str | None = None,
+    description: str | None = None,
+    status: str | None = None,
+    priority: str | None = None,
+    assignee: str | None = None,
+    tags: list[str] | None = None,
 ) -> dict:
     """
     Update an existing task.
@@ -246,7 +243,7 @@ async def taskr_update(
 @mcp.tool()
 async def taskr_search(
     query: str,
-    status: Optional[str] = None,
+    status: str | None = None,
     limit: int = 20,
 ) -> dict:
     """
@@ -333,8 +330,8 @@ async def devlog_add(
     category: str,
     title: str,
     content: str,
-    service_name: Optional[str] = None,
-    tags: Optional[List[str]] = None,
+    service_name: str | None = None,
+    tags: list[str] | None = None,
 ) -> dict:
     """
     Create a development log entry.
@@ -353,8 +350,8 @@ async def devlog_add(
         Created devlog with id and timestamps
     """
     await ensure_initialized()
-    from taskr.services import DevlogService
     from taskr.config import get_config
+    from taskr.services import DevlogService
 
     config = get_config()
     service = DevlogService()
@@ -374,9 +371,9 @@ async def devlog_add(
 
 @mcp.tool()
 async def devlog_list(
-    category: Optional[str] = None,
-    service_name: Optional[str] = None,
-    tags: Optional[List[str]] = None,
+    category: str | None = None,
+    service_name: str | None = None,
+    tags: list[str] | None = None,
     limit: int = 20,
 ) -> dict:
     """
@@ -434,8 +431,8 @@ async def devlog_get(devlog_id: str) -> dict:
 @mcp.tool()
 async def devlog_search(
     query: str,
-    category: Optional[str] = None,
-    service_name: Optional[str] = None,
+    category: str | None = None,
+    service_name: str | None = None,
     limit: int = 20,
 ) -> dict:
     """
@@ -474,10 +471,10 @@ async def devlog_search(
 @mcp.tool()
 async def devlog_update(
     devlog_id: str,
-    title: Optional[str] = None,
-    content: Optional[str] = None,
-    category: Optional[str] = None,
-    tags: Optional[List[str]] = None,
+    title: str | None = None,
+    content: str | None = None,
+    category: str | None = None,
+    tags: list[str] | None = None,
 ) -> dict:
     """
     Update an existing devlog entry.
@@ -538,7 +535,7 @@ async def devlog_delete(devlog_id: str) -> dict:
 # =============================================================================
 
 @mcp.tool()
-async def session_start(context: Optional[str] = None) -> dict:
+async def session_start(context: str | None = None) -> dict:
     """
     Start an agent session with context.
 
@@ -554,8 +551,8 @@ async def session_start(context: Optional[str] = None) -> dict:
         Session ID and context from previous session
     """
     await ensure_initialized()
-    from taskr.services import SessionService
     from taskr.config import get_config
+    from taskr.services import SessionService
 
     config = get_config()
     service = SessionService()
@@ -570,7 +567,7 @@ async def session_start(context: Optional[str] = None) -> dict:
 async def session_end(
     session_id: str,
     summary: str,
-    handoff_notes: Optional[str] = None,
+    handoff_notes: str | None = None,
 ) -> dict:
     """
     End an agent session with summary.
@@ -614,8 +611,8 @@ async def claim_work(
         Claim status and message
     """
     await ensure_initialized()
-    from taskr.services import SessionService
     from taskr.config import get_config
+    from taskr.services import SessionService
 
     config = get_config()
     service = SessionService()
@@ -634,7 +631,7 @@ async def release_work(
     work_id: str,
     repo: str,
     status: str = "completed",
-    notes: Optional[str] = None,
+    notes: str | None = None,
 ) -> dict:
     """
     Release claimed work.
@@ -650,8 +647,8 @@ async def release_work(
         Release confirmation
     """
     await ensure_initialized()
-    from taskr.services import SessionService
     from taskr.config import get_config
+    from taskr.services import SessionService
 
     config = get_config()
     service = SessionService()
@@ -696,6 +693,7 @@ async def what_changed(
 
 # Import and register context tools
 from taskr_mcp.tools.context import register_context_tools
+
 register_context_tools(mcp)
 
 
@@ -724,8 +722,8 @@ async def taskr_health() -> dict:
         Health status including database type and connection info
     """
     await ensure_initialized()
-    from taskr.db import get_adapter
     from taskr.config import get_config
+    from taskr.db import get_adapter
 
     config = get_config()
     adapter = get_adapter()
@@ -759,7 +757,7 @@ async def taskr_health() -> dict:
 @mcp.tool()
 async def taskr_sql_query(
     query: str,
-    params: Optional[List[str]] = None,
+    params: list[str] | None = None,
     read_only: bool = True,
 ) -> dict:
     """
@@ -777,8 +775,9 @@ async def taskr_sql_query(
         Query results with rows, columns, and row count
     """
     await ensure_initialized()
-    from taskr.db import get_adapter
     import time
+
+    from taskr.db import get_adapter
 
     adapter = get_adapter()
 
@@ -809,7 +808,7 @@ async def taskr_sql_query(
 @mcp.tool()
 async def taskr_sql_explain(
     query: str,
-    params: Optional[List[str]] = None,
+    params: list[str] | None = None,
     analyze: bool = True,
 ) -> dict:
     """
@@ -900,7 +899,7 @@ async def taskr_sql_explain(
 async def taskr_sql_migrate(
     sql: str,
     reason: str,
-    executed_by: Optional[str] = None,
+    executed_by: str | None = None,
     dry_run: bool = False,
 ) -> dict:
     """
@@ -919,9 +918,10 @@ async def taskr_sql_migrate(
         Migration result with success status and execution time
     """
     await ensure_initialized()
-    from taskr.db import get_adapter
-    from taskr.config import get_config
     import time
+
+    from taskr.config import get_config
+    from taskr.db import get_adapter
 
     config = get_config()
     adapter = get_adapter()

@@ -11,7 +11,7 @@ Provides graceful degradation for features not available in SQLite:
 import json
 import logging
 from pathlib import Path
-from typing import Optional, List, Any
+from typing import Any
 
 from taskr.db.interface import DatabaseAdapter
 
@@ -47,7 +47,7 @@ class SQLiteAdapter(DatabaseAdapter):
             )
 
         self.db_path = Path(db_path).expanduser()
-        self._conn: Optional[aiosqlite.Connection] = None
+        self._conn: aiosqlite.Connection | None = None
 
     async def connect(self) -> None:
         """Initialize database connection and create file if needed."""
@@ -101,7 +101,7 @@ class SQLiteAdapter(DatabaseAdapter):
             return f"DELETE {cursor.rowcount}"
         return "OK"
 
-    async def fetch(self, query: str, *args) -> List[dict]:
+    async def fetch(self, query: str, *args) -> list[dict]:
         """Fetch rows as list of dicts."""
         conn = await self._get_conn()
         query = self.format_query(query)
@@ -112,7 +112,7 @@ class SQLiteAdapter(DatabaseAdapter):
         # Convert Row objects to dicts
         return [dict(row) for row in rows]
 
-    async def fetchrow(self, query: str, *args) -> Optional[dict]:
+    async def fetchrow(self, query: str, *args) -> dict | None:
         """Fetch single row as dict."""
         conn = await self._get_conn()
         query = self.format_query(query)
@@ -164,10 +164,10 @@ class SQLiteAdapter(DatabaseAdapter):
         self,
         table: str,
         query: str,
-        columns: List[str],
+        columns: list[str],
         limit: int = 20,
-        where_clause: Optional[str] = None,
-    ) -> List[dict]:
+        where_clause: str | None = None,
+    ) -> list[dict]:
         """
         Text search using LIKE wildcards.
 
@@ -214,12 +214,12 @@ def json_loads(value: str) -> Any:
     return json.loads(value)
 
 
-def list_to_json(items: List[str]) -> str:
+def list_to_json(items: list[str]) -> str:
     """Convert Python list to JSON string for SQLite storage."""
     return json.dumps(items or [])
 
 
-def json_to_list(value: str) -> List[str]:
+def json_to_list(value: str) -> list[str]:
     """Convert JSON string from SQLite to Python list."""
     if value is None:
         return []

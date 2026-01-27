@@ -10,7 +10,7 @@ Provides Supabase integration including:
 import os
 from typing import TYPE_CHECKING
 
-from taskr.plugins import TaskrPlugin, PluginInfo
+from taskr.plugins import PluginInfo, TaskrPlugin
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP

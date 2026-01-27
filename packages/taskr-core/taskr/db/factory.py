@@ -5,14 +5,13 @@ Creates the appropriate adapter based on configuration.
 """
 
 import logging
-from typing import Optional
 
 from taskr.db.interface import DatabaseAdapter
 
 logger = logging.getLogger(__name__)
 
 # Global adapter instance (singleton pattern)
-_adapter: Optional[DatabaseAdapter] = None
+_adapter: DatabaseAdapter | None = None
 
 
 def get_adapter(config=None) -> DatabaseAdapter:

@@ -2,12 +2,13 @@
 Supabase MCP tools for Taskr.
 """
 
-from datetime import datetime
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
 import json
+from datetime import datetime
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP
+
     from taskr_supabase.plugin import SupabasePlugin
 
 
@@ -19,7 +20,7 @@ def register(mcp: "FastMCP", plugin: "SupabasePlugin") -> None:
         function_name: str,
         function_path: str,
         verify_jwt: bool = True,
-        import_map: Optional[str] = None,
+        import_map: str | None = None,
         dry_run: bool = False,
     ) -> dict:
         """
@@ -35,8 +36,10 @@ def register(mcp: "FastMCP", plugin: "SupabasePlugin") -> None:
         Returns:
             Deployment status and URL
         """
-        import httpx
         from pathlib import Path
+
+        import httpx
+
         from taskr.db import get_adapter
 
         project_ref = plugin.get_project_ref()
@@ -80,7 +83,7 @@ def register(mcp: "FastMCP", plugin: "SupabasePlugin") -> None:
                     "detail": response.text,
                 }
 
-            result = response.json()
+            _response_data = response.json()  # noqa: F841 - validate JSON response
 
         # Log deployment to database
         adapter = get_adapter()
@@ -104,7 +107,7 @@ def register(mcp: "FastMCP", plugin: "SupabasePlugin") -> None:
 
     @mcp.tool()
     async def supabase_deploy_history(
-        function_name: Optional[str] = None,
+        function_name: str | None = None,
         limit: int = 20,
     ) -> dict:
         """

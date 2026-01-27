@@ -4,7 +4,7 @@ Skillflow data models.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Any
 from uuid import uuid4
 
 
@@ -33,7 +33,7 @@ class SkillflowStep:
     action: str  # Tool name or description
     description: str
     why: str  # Rationale for this step
-    inputs: Dict[str, Any] = field(default_factory=dict)
+    inputs: dict[str, Any] = field(default_factory=dict)
     on_error: str = "fail"  # fail, skip, retry
 
 
@@ -47,18 +47,18 @@ class Skillflow:
     name: str  # Unique kebab-case slug
     title: str
     id: str = field(default_factory=lambda: str(uuid4()))
-    description: Optional[str] = None
+    description: str | None = None
     status: str = "draft"  # draft, active, deprecated
     version: int = 1
-    inputs: List[Dict[str, Any]] = field(default_factory=list)
-    outputs: List[Dict[str, Any]] = field(default_factory=list)
-    preconditions: List[Dict[str, Any]] = field(default_factory=list)
-    steps: List[Dict[str, Any]] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
-    author: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    deleted_at: Optional[datetime] = None
+    inputs: list[dict[str, Any]] = field(default_factory=list)
+    outputs: list[dict[str, Any]] = field(default_factory=list)
+    preconditions: list[dict[str, Any]] = field(default_factory=list)
+    steps: list[dict[str, Any]] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    author: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    deleted_at: datetime | None = None
 
     # Computed metrics (from view)
     execution_count: int = 0
@@ -130,15 +130,15 @@ class SkillflowExecution:
     skillflow_id: str
     skillflow_name: str
     id: str = field(default_factory=lambda: str(uuid4()))
-    agent_id: Optional[str] = None
+    agent_id: str | None = None
     status: str = "pending"  # pending, running, completed, failed, cancelled
-    inputs: Dict[str, Any] = field(default_factory=dict)
-    outputs: Dict[str, Any] = field(default_factory=dict)
-    step_results: List[Dict[str, Any]] = field(default_factory=list)
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    duration_ms: Optional[int] = None
-    error_message: Optional[str] = None
+    inputs: dict[str, Any] = field(default_factory=dict)
+    outputs: dict[str, Any] = field(default_factory=dict)
+    step_results: list[dict[str, Any]] = field(default_factory=list)
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    duration_ms: int | None = None
+    error_message: str | None = None
 
     def to_dict(self) -> dict:
         return {

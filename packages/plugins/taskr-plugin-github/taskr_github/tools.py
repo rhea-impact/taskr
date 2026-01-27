@@ -4,10 +4,11 @@ GitHub MCP tools for Taskr.
 Tools for GitHub Projects V2 integration.
 """
 
-from typing import Optional, List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP
+
     from taskr_github.plugin import GitHubPlugin
 
 
@@ -19,9 +20,9 @@ def register(mcp: "FastMCP", plugin: "GitHubPlugin") -> None:
         owner: str,
         repo: str,
         title: str,
-        body: Optional[str] = None,
-        labels: Optional[List[str]] = None,
-        assignees: Optional[List[str]] = None,
+        body: str | None = None,
+        labels: list[str] | None = None,
+        assignees: list[str] | None = None,
     ) -> dict:
         """
         Create a GitHub issue.
@@ -70,7 +71,7 @@ def register(mcp: "FastMCP", plugin: "GitHubPlugin") -> None:
         owner: str,
         repo: str,
         state: str = "open",
-        labels: Optional[str] = None,
+        labels: str | None = None,
         limit: int = 30,
     ) -> dict:
         """
@@ -117,7 +118,7 @@ def register(mcp: "FastMCP", plugin: "GitHubPlugin") -> None:
                     "state": i["state"],
                     "url": i["html_url"],
                     "assignees": [a["login"] for a in i.get("assignees", [])],
-                    "labels": [l["name"] for l in i.get("labels", [])],
+                    "labels": [lbl["name"] for lbl in i.get("labels", [])],
                 }
                 for i in issues
                 if "pull_request" not in i  # Exclude PRs
@@ -132,8 +133,8 @@ def register(mcp: "FastMCP", plugin: "GitHubPlugin") -> None:
         title: str,
         head: str,
         base: str = "main",
-        body: Optional[str] = None,
-        issue: Optional[int] = None,
+        body: str | None = None,
+        issue: int | None = None,
         draft: bool = False,
     ) -> dict:
         """

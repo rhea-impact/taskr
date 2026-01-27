@@ -10,7 +10,7 @@ Supports full PostgreSQL features including:
 
 import asyncio
 import logging
-from typing import Optional, List, Any
+from typing import Any
 
 from taskr.db.interface import DatabaseAdapter
 
@@ -45,9 +45,9 @@ class PostgresAdapter(DatabaseAdapter):
             )
 
         self.url = connection_url
-        self._pool: Optional[asyncpg.Pool] = None
-        self._pool_loop: Optional[asyncio.AbstractEventLoop] = None
-        self._has_pgvector: Optional[bool] = None
+        self._pool: asyncpg.Pool | None = None
+        self._pool_loop: asyncio.AbstractEventLoop | None = None
+        self._has_pgvector: bool | None = None
 
     async def connect(self) -> None:
         """Initialize connection pool."""
@@ -96,14 +96,14 @@ class PostgresAdapter(DatabaseAdapter):
         async with pool.acquire() as conn:
             return await conn.execute(query, *args)
 
-    async def fetch(self, query: str, *args) -> List[dict]:
+    async def fetch(self, query: str, *args) -> list[dict]:
         """Fetch rows as list of dicts."""
         pool = await self._get_pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(query, *args)
             return [dict(row) for row in rows]
 
-    async def fetchrow(self, query: str, *args) -> Optional[dict]:
+    async def fetchrow(self, query: str, *args) -> dict | None:
         """Fetch single row as dict."""
         pool = await self._get_pool()
         async with pool.acquire() as conn:
@@ -161,10 +161,10 @@ class PostgresAdapter(DatabaseAdapter):
         self,
         table: str,
         query: str,
-        columns: List[str],
+        columns: list[str],
         limit: int = 20,
-        where_clause: Optional[str] = None,
-    ) -> List[dict]:
+        where_clause: str | None = None,
+    ) -> list[dict]:
         """
         Full-text search using PostgreSQL tsvector/tsquery.
 

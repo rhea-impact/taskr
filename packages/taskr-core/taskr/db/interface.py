@@ -5,7 +5,7 @@ Supports both PostgreSQL and SQLite with feature detection for graceful degradat
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional, List, Any
+from typing import Any
 
 
 class DatabaseAdapter(ABC):
@@ -43,7 +43,7 @@ class DatabaseAdapter(ABC):
         pass
 
     @abstractmethod
-    async def fetch(self, query: str, *args) -> List[dict]:
+    async def fetch(self, query: str, *args) -> list[dict]:
         """
         Fetch multiple rows as list of dicts.
 
@@ -57,7 +57,7 @@ class DatabaseAdapter(ABC):
         pass
 
     @abstractmethod
-    async def fetchrow(self, query: str, *args) -> Optional[dict]:
+    async def fetchrow(self, query: str, *args) -> dict | None:
         """
         Fetch single row as dict.
 
@@ -125,10 +125,10 @@ class DatabaseAdapter(ABC):
         self,
         table: str,
         query: str,
-        columns: List[str],
+        columns: list[str],
         limit: int = 20,
-        where_clause: Optional[str] = None,
-    ) -> List[dict]:
+        where_clause: str | None = None,
+    ) -> list[dict]:
         """
         Full-text search with graceful degradation.
 

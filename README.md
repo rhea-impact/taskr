@@ -1,5 +1,9 @@
 # Taskr
 
+[![CI](https://github.com/rhea-impact/taskr/actions/workflows/ci.yml/badge.svg)](https://github.com/rhea-impact/taskr/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+
 AI-native task management for Claude Code and MCP-compatible agents.
 
 ## Features
@@ -88,6 +92,17 @@ plugins:
 - `session_end` - End with handoff notes
 - `claim_work` - Atomically claim work item
 - `release_work` - Release claimed work
+- `what_changed` - See recent changes
+
+### SQL Tools
+- `taskr_sql_query` - Execute ad-hoc SQL queries
+- `taskr_sql_explain` - Analyze query performance
+- `taskr_sql_migrate` - Run SQL with audit logging
+
+### Utility
+- `taskr_triage` - Workflow guidance
+- `taskr_health` - Database health check
+- `taskr_migrate` - Run pending migrations
 
 ## Plugins
 

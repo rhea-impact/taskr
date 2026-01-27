@@ -2,12 +2,13 @@
 Skillflow MCP tools for Taskr.
 """
 
-from datetime import datetime
-from typing import Optional, List, Dict, Any, TYPE_CHECKING
 import json
+from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP
+
     from taskr_skillflows.plugin import SkillflowsPlugin
 
 
@@ -18,13 +19,13 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
     async def skillflow_create(
         name: str,
         title: str,
-        description: Optional[str] = None,
+        description: str | None = None,
         status: str = "draft",
-        inputs: Optional[List[Dict[str, Any]]] = None,
-        outputs: Optional[List[Dict[str, Any]]] = None,
-        preconditions: Optional[List[Dict[str, Any]]] = None,
-        steps: Optional[List[Dict[str, Any]]] = None,
-        tags: Optional[List[str]] = None,
+        inputs: list[dict[str, Any]] | None = None,
+        outputs: list[dict[str, Any]] | None = None,
+        preconditions: list[dict[str, Any]] | None = None,
+        steps: list[dict[str, Any]] | None = None,
+        tags: list[str] | None = None,
     ) -> dict:
         """
         Create a new skillflow workflow definition.
@@ -45,8 +46,8 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
         Returns:
             Created skillflow with validation feedback
         """
-        from taskr.db import get_adapter
         from taskr.config import get_config
+        from taskr.db import get_adapter
         from taskr_skillflows.models import Skillflow
 
         adapter = get_adapter()
@@ -137,8 +138,8 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
 
     @mcp.tool()
     async def skillflow_list(
-        status: Optional[str] = None,
-        tags: Optional[List[str]] = None,
+        status: str | None = None,
+        tags: list[str] | None = None,
         limit: int = 20,
     ) -> dict:
         """
@@ -207,7 +208,7 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
     @mcp.tool()
     async def skillflow_search(
         query: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 10,
     ) -> dict:
         """
@@ -272,7 +273,7 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
     @mcp.tool()
     async def skillflow_execute(
         name_or_id: str,
-        inputs: Optional[Dict[str, Any]] = None,
+        inputs: dict[str, Any] | None = None,
     ) -> dict:
         """
         Start executing a skillflow.
@@ -286,8 +287,8 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
         Returns:
             Execution ID and steps to follow
         """
-        from taskr.db import get_adapter
         from taskr.config import get_config
+        from taskr.db import get_adapter
         from taskr_skillflows.models import Skillflow, SkillflowExecution
 
         adapter = get_adapter()
@@ -338,16 +339,16 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
             "inputs": execution.inputs,
             "steps": skillflow.steps,
             "preconditions": skillflow.preconditions,
-            "message": f"Execute steps in order. Call skillflow_execution_complete when done.",
+            "message": "Execute steps in order. Call skillflow_execution_complete when done.",
         }
 
     @mcp.tool()
     async def skillflow_execution_complete(
         execution_id: str,
         status: str = "completed",
-        outputs: Optional[Dict[str, Any]] = None,
-        step_results: Optional[List[Dict[str, Any]]] = None,
-        error_message: Optional[str] = None,
+        outputs: dict[str, Any] | None = None,
+        step_results: list[dict[str, Any]] | None = None,
+        error_message: str | None = None,
     ) -> dict:
         """
         Mark a skillflow execution as complete.
@@ -406,8 +407,8 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
 
     @mcp.tool()
     async def skillflow_executions_list(
-        skillflow_name: Optional[str] = None,
-        status: Optional[str] = None,
+        skillflow_name: str | None = None,
+        status: str | None = None,
         limit: int = 20,
     ) -> dict:
         """
@@ -467,11 +468,11 @@ def register(mcp: "FastMCP", plugin: "SkillflowsPlugin") -> None:
     @mcp.tool()
     async def skillflow_update(
         name_or_id: str,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        status: Optional[str] = None,
-        steps: Optional[List[Dict[str, Any]]] = None,
-        tags: Optional[List[str]] = None,
+        title: str | None = None,
+        description: str | None = None,
+        status: str | None = None,
+        steps: list[dict[str, Any]] | None = None,
+        tags: list[str] | None = None,
     ) -> dict:
         """
         Update a skillflow definition.

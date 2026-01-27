@@ -7,9 +7,8 @@ capturing decisions, patterns, bugfixes, and other knowledge.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Any
 from uuid import uuid4
-
 
 # Valid devlog categories
 DEVLOG_CATEGORIES = (
@@ -56,14 +55,14 @@ class Devlog:
     content: str
     category: str = "note"
     id: str = field(default_factory=lambda: str(uuid4()))
-    author: Optional[str] = None
+    author: str | None = None
     agent_id: str = "claude-code"
-    service_name: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    deleted_at: Optional[datetime] = None
+    service_name: str | None = None
+    tags: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    deleted_at: datetime | None = None
 
     def __post_init__(self):
         if self.created_at is None:

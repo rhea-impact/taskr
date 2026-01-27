@@ -4,13 +4,13 @@ Task Service for Taskr.
 CRUD operations for tasks with support for both PostgreSQL and SQLite.
 """
 
-from datetime import datetime
-from typing import Optional, List
+import builtins
 import json
 import logging
+from datetime import datetime
 
 from taskr.db import get_adapter
-from taskr.models.task import Task, TASK_STATUSES, TASK_PRIORITIES
+from taskr.models.task import TASK_PRIORITIES, TASK_STATUSES, Task
 
 logger = logging.getLogger(__name__)
 
@@ -47,13 +47,13 @@ class TaskService:
     async def create(
         self,
         title: str,
-        description: Optional[str] = None,
+        description: str | None = None,
         status: str = "open",
         priority: str = "medium",
-        assignee: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        created_by: Optional[str] = None,
-        due_at: Optional[datetime] = None,
+        assignee: str | None = None,
+        tags: list[str] | None = None,
+        created_by: str | None = None,
+        due_at: datetime | None = None,
     ) -> Task:
         """
         Create a new task.
@@ -118,7 +118,7 @@ class TaskService:
         logger.info(f"Created task: {task.id} - {task.title}")
         return task
 
-    async def get(self, task_id: str) -> Optional[Task]:
+    async def get(self, task_id: str) -> Task | None:
         """Get a task by ID."""
         table = self._table_name()
         query = self.adapter.format_query(
@@ -132,14 +132,14 @@ class TaskService:
     async def update(
         self,
         task_id: str,
-        title: Optional[str] = None,
-        description: Optional[str] = None,
-        status: Optional[str] = None,
-        priority: Optional[str] = None,
-        assignee: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        due_at: Optional[datetime] = None,
-    ) -> Optional[Task]:
+        title: str | None = None,
+        description: str | None = None,
+        status: str | None = None,
+        priority: str | None = None,
+        assignee: str | None = None,
+        tags: list[str] | None = None,
+        due_at: datetime | None = None,
+    ) -> Task | None:
         """
         Update a task.
 
@@ -246,13 +246,13 @@ class TaskService:
 
     async def list(
         self,
-        status: Optional[str] = None,
-        priority: Optional[str] = None,
-        assignee: Optional[str] = None,
-        created_by: Optional[str] = None,
+        status: str | None = None,
+        priority: str | None = None,
+        assignee: str | None = None,
+        created_by: str | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Task]:
+    ) -> list[Task]:
         """
         List tasks with optional filters.
 
@@ -311,9 +311,9 @@ class TaskService:
     async def search(
         self,
         query: str,
-        status: Optional[str] = None,
+        status: str | None = None,
         limit: int = 20,
-    ) -> List[Task]:
+    ) -> builtins.list[Task]:
         """
         Search tasks by title and description.
 
@@ -339,10 +339,10 @@ class TaskService:
         )
         return [Task.from_dict(row) for row in rows]
 
-    async def assign(self, task_id: str, assignee: str) -> Optional[Task]:
+    async def assign(self, task_id: str, assignee: str) -> Task | None:
         """Assign a task to a user."""
         return await self.update(task_id, assignee=assignee)
 
-    async def close(self, task_id: str) -> Optional[Task]:
+    async def close(self, task_id: str) -> Task | None:
         """Mark a task as done."""
         return await self.update(task_id, status="done")

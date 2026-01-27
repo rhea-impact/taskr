@@ -6,11 +6,12 @@ Supports both PostgreSQL and SQLite database configurations.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field, asdict
-from pathlib import Path
-from typing import Optional, List, Dict, Any
-import os
+
 import logging
+import os
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +31,14 @@ class DatabaseConfig:
 
     type: str = "sqlite"  # "sqlite" or "postgres"
     sqlite_path: str = "~/.taskr/taskr.db"
-    postgres_url: Optional[str] = None
+    postgres_url: str | None = None
 
 
 @dataclass
 class IdentityConfig:
     """User/agent identity settings."""
 
-    author: Optional[str] = None
+    author: str | None = None
     agent_id: str = "claude-code"
 
 
@@ -45,8 +46,8 @@ class IdentityConfig:
 class PluginConfig:
     """Plugin configuration."""
 
-    enabled: List[str] = field(default_factory=list)
-    settings: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    enabled: list[str] = field(default_factory=list)
+    settings: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 @dataclass
@@ -63,7 +64,7 @@ class TaskrConfig:
 
     # Convenience accessors
     @property
-    def author(self) -> Optional[str]:
+    def author(self) -> str | None:
         return self.identity.author
 
     @property
@@ -133,7 +134,7 @@ def _parse_plugin_config(data: dict) -> PluginConfig:
     )
 
 
-def load_config(config_path: Optional[Path] = None) -> TaskrConfig:
+def load_config(config_path: Path | None = None) -> TaskrConfig:
     """
     Load configuration from file with environment variable overrides.
 
@@ -149,7 +150,7 @@ def load_config(config_path: Optional[Path] = None) -> TaskrConfig:
     # Load from YAML if available
     if HAS_YAML and config_file.exists():
         try:
-            with open(config_file, 'r') as f:
+            with open(config_file) as f:
                 data = yaml.safe_load(f) or {}
 
             config.database = _parse_database_config(data)
@@ -178,7 +179,7 @@ def load_config(config_path: Optional[Path] = None) -> TaskrConfig:
     return config
 
 
-def save_config(config: TaskrConfig, config_path: Optional[Path] = None) -> None:
+def save_config(config: TaskrConfig, config_path: Path | None = None) -> None:
     """
     Save configuration to file.
 
@@ -237,7 +238,7 @@ def ensure_config_dir() -> Path:
 
 
 # Cached config instance
-_config: Optional[TaskrConfig] = None
+_config: TaskrConfig | None = None
 
 
 def get_config() -> TaskrConfig:

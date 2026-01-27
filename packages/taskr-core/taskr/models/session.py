@@ -7,7 +7,6 @@ Activities log specific actions within sessions.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 from uuid import uuid4
 
 
@@ -35,13 +34,13 @@ class Session:
 
     agent_id: str
     id: str = field(default_factory=lambda: str(uuid4()))
-    started_at: Optional[datetime] = None
-    ended_at: Optional[datetime] = None
-    summary: Optional[str] = None
-    handoff_notes: Optional[str] = None
-    context: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    summary: str | None = None
+    handoff_notes: str | None = None
+    context: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
 
     def __post_init__(self):
         now = datetime.utcnow()
@@ -58,7 +57,7 @@ class Session:
         return self.ended_at is None
 
     @property
-    def duration_seconds(self) -> Optional[float]:
+    def duration_seconds(self) -> float | None:
         """Get session duration in seconds."""
         if not self.started_at:
             return None
@@ -145,12 +144,12 @@ class Activity:
     agent_id: str
     activity_type: str
     id: str = field(default_factory=lambda: str(uuid4()))
-    session_id: Optional[str] = None
-    target_type: Optional[str] = None
-    target_id: Optional[str] = None
-    repo: Optional[str] = None
-    notes: Optional[str] = None
-    created_at: Optional[datetime] = None
+    session_id: str | None = None
+    target_type: str | None = None
+    target_id: str | None = None
+    repo: str | None = None
+    notes: str | None = None
+    created_at: datetime | None = None
 
     def __post_init__(self):
         if self.created_at is None:

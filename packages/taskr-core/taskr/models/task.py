@@ -6,7 +6,6 @@ Tasks are the core work items that can be created, assigned, and tracked.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional, List
 from uuid import uuid4
 
 
@@ -33,17 +32,17 @@ class Task:
 
     title: str
     id: str = field(default_factory=lambda: str(uuid4()))
-    description: Optional[str] = None
+    description: str | None = None
     status: str = "open"  # open, in_progress, done, cancelled
     priority: str = "medium"  # low, medium, high, critical
-    assignee: Optional[str] = None
-    tags: List[str] = field(default_factory=list)
-    created_by: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-    due_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    deleted_at: Optional[datetime] = None
+    assignee: str | None = None
+    tags: list[str] = field(default_factory=list)
+    created_by: str | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+    due_at: datetime | None = None
+    completed_at: datetime | None = None
+    deleted_at: datetime | None = None
 
     def __post_init__(self):
         if self.created_at is None:

@@ -9,9 +9,9 @@ Provides tracked, discoverable workflows that AI agents can:
 """
 
 from pathlib import Path
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
-from taskr.plugins import TaskrPlugin, PluginInfo
+from taskr.plugins import PluginInfo, TaskrPlugin
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP
@@ -39,7 +39,7 @@ class SkillflowsPlugin(TaskrPlugin):
         from taskr_skillflows import tools
         tools.register(mcp, self)
 
-    def get_migrations(self) -> List[str]:
+    def get_migrations(self) -> list[str]:
         """Return migration files for skillflows tables."""
         migrations_dir = Path(__file__).parent / "migrations"
         if migrations_dir.exists():

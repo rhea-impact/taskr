@@ -5,7 +5,7 @@ Plugins are discovered via Python entry points in the 'taskr.plugins' group.
 """
 
 import logging
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP
@@ -15,7 +15,7 @@ from taskr.plugins import TaskrPlugin
 logger = logging.getLogger(__name__)
 
 
-def discover_plugins() -> List[TaskrPlugin]:
+def discover_plugins() -> list[TaskrPlugin]:
     """
     Discover installed plugins via entry points.
 
@@ -64,7 +64,7 @@ def discover_plugins() -> List[TaskrPlugin]:
     return plugins
 
 
-def load_plugins(mcp: "FastMCP") -> List[TaskrPlugin]:
+def load_plugins(mcp: "FastMCP") -> list[TaskrPlugin]:
     """
     Load and register enabled plugins.
 
@@ -123,15 +123,16 @@ def load_plugins(mcp: "FastMCP") -> List[TaskrPlugin]:
     return loaded
 
 
-async def run_plugin_migrations(plugins: List[TaskrPlugin]) -> None:
+async def run_plugin_migrations(plugins: list[TaskrPlugin]) -> None:
     """
     Run migrations for loaded plugins.
 
     Args:
         plugins: List of loaded plugins
     """
-    from taskr.db import get_adapter
     from pathlib import Path
+
+    from taskr.db import get_adapter
 
     adapter = get_adapter()
 
@@ -167,7 +168,7 @@ async def run_plugin_migrations(plugins: List[TaskrPlugin]) -> None:
                 raise
 
 
-def shutdown_plugins(plugins: List[TaskrPlugin]) -> None:
+def shutdown_plugins(plugins: list[TaskrPlugin]) -> None:
     """
     Call shutdown hooks for loaded plugins.
 

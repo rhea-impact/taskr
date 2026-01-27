@@ -4,12 +4,12 @@ Session Service for Taskr.
 Agent session management with work claiming and handoff support.
 """
 
-from datetime import datetime, timedelta
-from typing import Optional, List, Dict, Any
 import logging
+from datetime import datetime
+from typing import Any
 
 from taskr.db import get_adapter
-from taskr.models.session import Session, Activity
+from taskr.models.session import Activity, Session
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +55,8 @@ class SessionService:
     async def start(
         self,
         agent_id: str,
-        context: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        context: str | None = None,
+    ) -> dict[str, Any]:
         """
         Start a new agent session.
 
@@ -132,8 +132,8 @@ class SessionService:
         self,
         session_id: str,
         summary: str,
-        handoff_notes: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        handoff_notes: str | None = None,
+    ) -> dict[str, Any]:
         """
         End an agent session.
 
@@ -198,8 +198,8 @@ class SessionService:
         work_type: str,
         work_id: str,
         repo: str,
-        session_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        session_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Atomically claim work to prevent duplicate effort.
 
@@ -292,9 +292,9 @@ class SessionService:
         work_id: str,
         repo: str,
         status: str = "completed",
-        notes: Optional[str] = None,
-        session_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        notes: str | None = None,
+        session_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Release claimed work.
 
@@ -357,8 +357,8 @@ class SessionService:
     async def what_changed(
         self,
         since: datetime,
-        agent_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        agent_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Get changes since a timestamp.
 
@@ -442,7 +442,7 @@ class SessionService:
             "session_count": len(sessions),
         }
 
-    async def get_session(self, session_id: str) -> Optional[Session]:
+    async def get_session(self, session_id: str) -> Session | None:
         """Get a session by ID."""
         sessions_table = self._sessions_table()
         row = await self.adapter.fetchrow(
@@ -457,10 +457,10 @@ class SessionService:
 
     async def list_sessions(
         self,
-        agent_id: Optional[str] = None,
+        agent_id: str | None = None,
         active_only: bool = False,
         limit: int = 20,
-    ) -> List[Session]:
+    ) -> list[Session]:
         """List sessions with optional filters."""
         sessions_table = self._sessions_table()
         conditions = []

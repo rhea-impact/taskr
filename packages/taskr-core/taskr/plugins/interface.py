@@ -6,7 +6,7 @@ Plugins implement this interface to extend Taskr with additional tools.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP
@@ -28,7 +28,7 @@ class PluginInfo:
     version: str
     description: str
     requires_postgres: bool = False
-    author: Optional[str] = None
+    author: str | None = None
 
 
 class TaskrPlugin(ABC):
@@ -77,7 +77,7 @@ class TaskrPlugin(ABC):
         """
         pass
 
-    def get_migrations(self) -> List[str]:
+    def get_migrations(self) -> list[str]:
         """
         Return list of migration file paths.
 

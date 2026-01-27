@@ -6,8 +6,8 @@ AI-native task management with support for PostgreSQL and SQLite.
 
 __version__ = "0.1.0"
 
-from taskr.config import load_config, TaskrConfig
-from taskr.db import get_adapter, DatabaseAdapter
+from taskr.config import TaskrConfig, load_config
+from taskr.db import DatabaseAdapter, get_adapter
 
 __all__ = [
     "load_config",

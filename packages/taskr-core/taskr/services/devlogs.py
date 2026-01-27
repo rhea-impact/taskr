@@ -4,13 +4,14 @@ Devlog Service for Taskr.
 Development logs for AI agent memory and institutional knowledge.
 """
 
-from datetime import datetime
-from typing import Optional, List, Dict, Any
+import builtins
 import json
 import logging
+from datetime import datetime
+from typing import Any
 
 from taskr.db import get_adapter
-from taskr.models.devlog import Devlog, DEVLOG_CATEGORIES
+from taskr.models.devlog import DEVLOG_CATEGORIES, Devlog
 
 logger = logging.getLogger(__name__)
 
@@ -53,11 +54,11 @@ class DevlogService:
         category: str,
         title: str,
         content: str,
-        author: Optional[str] = None,
+        author: str | None = None,
         agent_id: str = "claude-code",
-        service_name: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        service_name: str | None = None,
+        tags: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Devlog:
         """
         Create a new devlog entry.
@@ -125,7 +126,7 @@ class DevlogService:
         logger.info(f"Created devlog: {devlog.id} [{devlog.category}] {devlog.title}")
         return devlog
 
-    async def get(self, devlog_id: str) -> Optional[Devlog]:
+    async def get(self, devlog_id: str) -> Devlog | None:
         """Get a devlog by ID."""
         table = self._table_name()
         query = self.adapter.format_query(
@@ -139,12 +140,12 @@ class DevlogService:
     async def update(
         self,
         devlog_id: str,
-        title: Optional[str] = None,
-        content: Optional[str] = None,
-        category: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> Optional[Devlog]:
+        title: str | None = None,
+        content: str | None = None,
+        category: str | None = None,
+        tags: list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> Devlog | None:
         """
         Update a devlog entry.
 
@@ -240,14 +241,14 @@ class DevlogService:
 
     async def list(
         self,
-        category: Optional[str] = None,
-        author: Optional[str] = None,
-        agent_id: Optional[str] = None,
-        service_name: Optional[str] = None,
-        tags: Optional[List[str]] = None,
+        category: str | None = None,
+        author: str | None = None,
+        agent_id: str | None = None,
+        service_name: str | None = None,
+        tags: list[str] | None = None,
         limit: int = 50,
         offset: int = 0,
-    ) -> List[Devlog]:
+    ) -> list[Devlog]:
         """
         List devlogs with optional filters.
 
@@ -321,10 +322,10 @@ class DevlogService:
     async def search(
         self,
         query: str,
-        category: Optional[str] = None,
-        service_name: Optional[str] = None,
+        category: str | None = None,
+        service_name: str | None = None,
         limit: int = 20,
-    ) -> List[Devlog]:
+    ) -> builtins.list[Devlog]:
         """
         Full-text search across devlogs.
 
@@ -360,6 +361,6 @@ class DevlogService:
         )
         return [Devlog.from_dict(row) for row in rows]
 
-    def get_categories(self) -> List[str]:
+    def get_categories(self) -> builtins.list[str]:
         """Get list of valid categories."""
         return list(DEVLOG_CATEGORIES)
