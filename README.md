@@ -40,6 +40,8 @@ Add to your Claude Code MCP config:
 
 > **Note:** `GITHUB_TOKEN` is required for GitHub integration. Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` and `project` scopes.
 
+> **Recommended:** Install the [GitHub MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/github) alongside taskr. Taskr's GitHub tools handle project workflows; GitHub MCP handles everything else (searching, commenting, reading issues, etc.).
+
 ### Team Setup (PostgreSQL)
 
 ```bash
