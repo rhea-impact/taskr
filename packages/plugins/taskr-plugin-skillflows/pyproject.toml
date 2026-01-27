@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "taskr-plugin-skillflows"
+version = "0.1.0"
+description = "Skillflows plugin for Taskr - tracked, discoverable workflows"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Rhea Impact", email = "hello@rhea-impact.org" }
+]
+keywords = ["taskr", "skillflows", "workflows", "mcp"]
+dependencies = [
+    "taskr-core[postgres]>=0.1.0",
+]
+
+[project.entry-points."taskr.plugins"]
+skillflows = "taskr_skillflows.plugin:SkillflowsPlugin"
+
+[project.urls]
+Homepage = "https://github.com/rhea-impact/taskr"
+Repository = "https://github.com/rhea-impact/taskr"
+
+[tool.hatch.build.targets.wheel]
+packages = ["taskr_skillflows"]

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "taskr-plugin-supabase"
+version = "0.1.0"
+description = "Supabase integration plugin for Taskr - Edge Functions and migrations"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Rhea Impact", email = "hello@rhea-impact.org" }
+]
+keywords = ["taskr", "supabase", "edge-functions", "mcp"]
+dependencies = [
+    "taskr-core[postgres]>=0.1.0",
+    "httpx>=0.25.0",
+]
+
+[project.entry-points."taskr.plugins"]
+supabase = "taskr_supabase.plugin:SupabasePlugin"
+
+[project.urls]
+Homepage = "https://github.com/rhea-impact/taskr"
+Repository = "https://github.com/rhea-impact/taskr"
+
+[tool.hatch.build.targets.wheel]
+packages = ["taskr_supabase"]

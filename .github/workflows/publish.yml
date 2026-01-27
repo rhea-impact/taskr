@@ -1,0 +1,70 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write  # For trusted publishing
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tools
+        run: pip install build twine
+
+      - name: Build taskr-core
+        run: |
+          cd packages/taskr-core
+          python -m build
+
+      - name: Build taskr-mcp
+        run: |
+          cd packages/taskr-mcp
+          python -m build
+
+      - name: Build plugins
+        run: |
+          cd packages/plugins/taskr-plugin-github
+          python -m build
+          cd ../taskr-plugin-skillflows
+          python -m build
+          cd ../taskr-plugin-supabase
+          python -m build
+
+      - name: Publish taskr-core to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/taskr-core/dist/
+
+      - name: Publish taskr-mcp to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/taskr-mcp/dist/
+
+      - name: Publish plugins to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/plugins/taskr-plugin-github/dist/
+        continue-on-error: true
+
+      - name: Publish skillflows plugin
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/plugins/taskr-plugin-skillflows/dist/
+        continue-on-error: true
+
+      - name: Publish supabase plugin
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/plugins/taskr-plugin-supabase/dist/
+        continue-on-error: true
