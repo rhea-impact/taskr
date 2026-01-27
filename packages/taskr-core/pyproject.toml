@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "taskr-core"
+version = "0.1.0"
+description = "Core library for Taskr - AI-native task management"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Rhea Impact", email = "hello@rhea-impact.org" }
+]
+keywords = ["taskr", "task-management", "ai", "devlog"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "pyyaml>=6.0",
+    "aiosqlite>=0.19.0",
+]
+
+[project.optional-dependencies]
+postgres = [
+    "asyncpg>=0.29.0",
+]
+all = [
+    "asyncpg>=0.29.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/rhea-impact/taskr"
+Repository = "https://github.com/rhea-impact/taskr"
+Issues = "https://github.com/rhea-impact/taskr/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["taskr"]

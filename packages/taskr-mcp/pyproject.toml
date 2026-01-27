@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "taskr-mcp"
+version = "0.1.0"
+description = "MCP server for Taskr - AI-native task management"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Rhea Impact", email = "hello@rhea-impact.org" }
+]
+keywords = ["taskr", "mcp", "claude", "ai", "task-management"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "taskr-core>=0.1.0",
+    "mcp>=1.0.0",
+]
+
+[project.optional-dependencies]
+postgres = [
+    "taskr-core[postgres]>=0.1.0",
+]
+all = [
+    "taskr-core[all]>=0.1.0",
+]
+
+[project.scripts]
+taskr-mcp = "taskr_mcp.server:main"
+
+[project.urls]
+Homepage = "https://github.com/rhea-impact/taskr"
+Repository = "https://github.com/rhea-impact/taskr"
+Issues = "https://github.com/rhea-impact/taskr/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["taskr_mcp"]

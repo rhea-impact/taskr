@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "taskr-plugin-github"
+version = "0.1.0"
+description = "GitHub Projects V2 integration for Taskr"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Rhea Impact", email = "hello@rhea-impact.org" }
+]
+keywords = ["taskr", "github", "projects", "mcp"]
+dependencies = [
+    "taskr-core>=0.1.0",
+    "httpx>=0.25.0",
+]
+
+[project.entry-points."taskr.plugins"]
+github = "taskr_github.plugin:GitHubPlugin"
+
+[project.urls]
+Homepage = "https://github.com/rhea-impact/taskr"
+Repository = "https://github.com/rhea-impact/taskr"
+
+[tool.hatch.build.targets.wheel]
+packages = ["taskr_github"]
