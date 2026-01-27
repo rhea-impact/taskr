@@ -24,7 +24,7 @@ pip install taskr-mcp
 taskr-mcp
 ```
 
-Add to your Claude Code MCP config:
+Add to your Claude Code MCP config (`~/.claude/claude_code_config.json`):
 ```json
 {
   "mcpServers": {
@@ -33,14 +33,21 @@ Add to your Claude Code MCP config:
       "env": {
         "GITHUB_TOKEN": "your-github-token"
       }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "your-github-token"
+      }
     }
   }
 }
 ```
 
-> **Note:** `GITHUB_TOKEN` is required for GitHub integration. Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` and `project` scopes.
-
-> **Recommended:** Install the [GitHub MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/github) alongside taskr. Taskr's GitHub tools handle project workflows; GitHub MCP handles everything else (searching, commenting, reading issues, etc.).
+> **Note:** Create a [GitHub Personal Access Token](https://github.com/settings/tokens) with `repo` and `project` scopes. Use the same token for both servers.
+>
+> **Why both?** Taskr handles project workflows (create projects, atomic issue+project linking). GitHub MCP handles standard operations (search, comment, read issues). Together they provide complete GitHub integration.
 
 ### Team Setup (PostgreSQL)
 
