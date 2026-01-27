@@ -32,6 +32,26 @@ While this is just the start of what Taskr can do for teams, it's enough to **do
 
 It's a low-opinionated way to keep projects organized using the best coding agent in the world—Claude Code—without getting in Claude's way. Use Claude Code how you love to use it, but invoke `taskr triage` whenever you need to make sure Claude is following the plan.
 
+### Taskr Building Taskr
+
+We use Taskr to build Taskr. Here's what it looks like:
+
+<p align="center">
+  <img src="assets/screenshot-kanban.png" alt="GitHub Project Kanban" width="800">
+</p>
+
+<p align="center">
+  <em>GitHub Projects kanban—tasks move from Todo → In Progress → Done</em>
+</p>
+
+<p align="center">
+  <img src="assets/screenshot-issues.png" alt="GitHub Issues" width="800">
+</p>
+
+<p align="center">
+  <em>GitHub Issues with labels—all managed by Claude Code via Taskr</em>
+</p>
+
 ---
 
 ## Taskr Learns Over Time
