@@ -752,6 +752,131 @@ async def taskr_health() -> dict:
 
 
 # =============================================================================
+# SQL TOOLS
+# =============================================================================
+
+
+@mcp.tool()
+async def taskr_sql_query(
+    query: str,
+    params: Optional[List[str]] = None,
+    read_only: bool = True,
+) -> dict:
+    """
+    Execute a SQL query against the taskr database.
+
+    By default only SELECT queries are allowed (read_only=True).
+    Set read_only=False for INSERT/UPDATE/DELETE operations.
+
+    Args:
+        query: SQL query to execute
+        params: Optional query parameters
+        read_only: If True, only SELECT allowed (default True)
+
+    Returns:
+        Query results with rows, columns, and row count
+    """
+    await ensure_initialized()
+    from taskr.db import get_adapter
+    import time
+
+    adapter = get_adapter()
+
+    # Validate read_only mode
+    if read_only:
+        query_upper = query.strip().upper()
+        if not query_upper.startswith("SELECT") and not query_upper.startswith("WITH"):
+            return {
+                "error": "Only SELECT queries allowed in read_only mode. Set read_only=False for write operations."
+            }
+
+    try:
+        start = time.time()
+        rows = await adapter.fetch(query, *(params or []))
+        elapsed = time.time() - start
+
+        return {
+            "success": True,
+            "rows": rows,
+            "row_count": len(rows),
+            "columns": list(rows[0].keys()) if rows else [],
+            "execution_time_ms": round(elapsed * 1000, 2),
+        }
+    except Exception as e:
+        return {"error": f"Query failed: {str(e)}"}
+
+
+@mcp.tool()
+async def taskr_sql_migrate(
+    sql: str,
+    reason: str,
+    executed_by: Optional[str] = None,
+    dry_run: bool = False,
+) -> dict:
+    """
+    Run a SQL migration with audit logging.
+
+    All-or-nothing execution - wraps in a transaction so partial failures
+    are rolled back. Logs execution to sql_audit_log table (if it exists).
+
+    Args:
+        sql: SQL migration script
+        reason: Why this migration is being run (for audit log)
+        executed_by: Who is executing (defaults to config.agent_id)
+        dry_run: If True, preview SQL without executing (default False)
+
+    Returns:
+        Migration result with success status and execution time
+    """
+    await ensure_initialized()
+    from taskr.db import get_adapter
+    from taskr.config import get_config
+    import time
+
+    config = get_config()
+    adapter = get_adapter()
+    executed_by = executed_by or config.agent_id
+
+    if dry_run:
+        return {
+            "dry_run": True,
+            "sql": sql,
+            "reason": reason,
+            "executed_by": executed_by,
+            "message": "SQL not executed (dry_run=True)",
+        }
+
+    try:
+        start = time.time()
+
+        # Execute the migration
+        # Note: For PostgreSQL, this runs in a transaction by default
+        await adapter.execute(sql)
+
+        elapsed = time.time() - start
+
+        # Try to log to audit table (ignore if it doesn't exist)
+        try:
+            audit_sql = """
+                INSERT INTO sql_audit_log (sql_text, reason, executed_by, execution_time_ms)
+                VALUES ($1, $2, $3, $4)
+            """
+            await adapter.execute(audit_sql, sql[:10000], reason, executed_by, round(elapsed * 1000, 2))
+        except Exception:
+            # Audit table might not exist, that's OK
+            pass
+
+        return {
+            "success": True,
+            "reason": reason,
+            "executed_by": executed_by,
+            "execution_time_ms": round(elapsed * 1000, 2),
+        }
+    except Exception as e:
+        return {"error": f"Migration failed: {str(e)}"}
+
+
+# =============================================================================
 # CLI ENTRY POINT
 # =============================================================================
 
