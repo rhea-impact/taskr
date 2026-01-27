@@ -47,7 +47,7 @@ Add to your Claude Code MCP config (`~/.claude/claude_code_config.json`):
 
 > **Note:** Create a [GitHub Personal Access Token](https://github.com/settings/tokens) with `repo` and `project` scopes. Use the same token for both servers.
 >
-> **Why both?** Taskr handles project workflows (create projects, atomic issue+project linking). GitHub MCP handles standard operations (search, comment, read issues). Together they provide complete GitHub integration.
+> **Why both?** GitHub MCP **cannot** manage Projects V2 (no create/read/update/delete). Since GitHub Projects are now org-level (not repo-level), taskr provides the missing project CRUD. GitHub MCP handles repo operations (issues, PRs, search, comments).
 
 ### Team Setup (PostgreSQL)
 
@@ -114,17 +114,18 @@ plugins:
 - `taskr_sql_explain` - Analyze query performance
 - `taskr_sql_migrate` - Run SQL with audit logging
 
-### GitHub Integration (Complements GitHub MCP)
-These tools fill gaps in the GitHub MCP or provide leaner interfaces:
-- `github_project_create` - Create GitHub Project V2 (GitHub MCP can't do this)
-- `github_project_items` - List project items with minimal output (saves tokens)
-- `github_create_issue_in_project` - Create issue AND add to project atomically
-- `github_pr_create` - Create PR with smart issue linking (auto-adds to project)
+### GitHub Projects V2 (GitHub MCP can't do this)
+GitHub MCP has no project management capabilities. Since Projects V2 are org-level (not repo-level), taskr provides the missing CRUD:
+
+- `github_project_create` - Create a new Project V2
+- `github_project_items` - List project items with minimal output
 - `github_project_add_item` - Add issue/PR to project
-- `github_project_close` / `github_project_reopen` - Manage project lifecycle
+- `github_project_close` / `github_project_reopen` - Archive/restore projects
+- `github_create_issue_in_project` - Create issue AND link to project atomically
+- `github_pr_create` - Create PR with smart issue linking (auto-adds to project)
 - `github_get_issue_id` / `github_get_org_id` - Get node IDs for API calls
 
-> **Note:** Use standard GitHub MCP tools (`mcp__github__*`) for reading issues, searching, commenting, etc. These taskr tools are specifically for project-centric workflows.
+> **Note:** Use GitHub MCP (`mcp__github__*`) for repo-level operations: reading issues, searching, commenting, listing PRs, etc.
 
 ### Utility
 - `taskr_triage` - Workflow guidance
