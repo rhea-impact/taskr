@@ -698,6 +698,16 @@ register_context_tools(mcp)
 
 
 # =============================================================================
+# GITHUB TOOLS
+# =============================================================================
+
+# Import and register GitHub tools (core integration, not a plugin)
+from taskr_mcp.tools.github import register_github_tools
+
+register_github_tools(mcp)
+
+
+# =============================================================================
 # UTILITY TOOLS
 # =============================================================================
 

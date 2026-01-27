@@ -11,8 +11,9 @@ AI-native task management for Claude Code and MCP-compatible agents.
 - **Task Management** - Create, track, and search tasks with full CRUD operations
 - **Development Logs** - Persistent AI memory across sessions (decisions, bugfixes, patterns)
 - **Agent Sessions** - Coordinate multi-agent work with handoffs and work claiming
+- **GitHub Integration** - Projects V2, issues, and PRs built-in (no plugin needed)
 - **Dual Database Support** - PostgreSQL for teams, SQLite for local use
-- **Plugin Architecture** - Extend with GitHub, Skillflows, Supabase integrations
+- **Plugin Architecture** - Extend with Skillflows, Supabase, and custom integrations
 
 ## Quick Start
 
@@ -28,11 +29,16 @@ Add to your Claude Code MCP config:
 {
   "mcpServers": {
     "taskr": {
-      "command": "taskr-mcp"
+      "command": "taskr-mcp",
+      "env": {
+        "GITHUB_TOKEN": "your-github-token"
+      }
     }
   }
 }
 ```
+
+> **Note:** `GITHUB_TOKEN` is required for GitHub integration. Create a [Personal Access Token](https://github.com/settings/tokens) with `repo` and `project` scopes.
 
 ### Team Setup (PostgreSQL)
 
@@ -99,6 +105,18 @@ plugins:
 - `taskr_sql_explain` - Analyze query performance
 - `taskr_sql_migrate` - Run SQL with audit logging
 
+### GitHub Integration (Complements GitHub MCP)
+These tools fill gaps in the GitHub MCP or provide leaner interfaces:
+- `github_project_create` - Create GitHub Project V2 (GitHub MCP can't do this)
+- `github_project_items` - List project items with minimal output (saves tokens)
+- `github_create_issue_in_project` - Create issue AND add to project atomically
+- `github_pr_create` - Create PR with smart issue linking (auto-adds to project)
+- `github_project_add_item` - Add issue/PR to project
+- `github_project_close` / `github_project_reopen` - Manage project lifecycle
+- `github_get_issue_id` / `github_get_org_id` - Get node IDs for API calls
+
+> **Note:** Use standard GitHub MCP tools (`mcp__github__*`) for reading issues, searching, commenting, etc. These taskr tools are specifically for project-centric workflows.
+
 ### Utility
 - `taskr_triage` - Workflow guidance
 - `taskr_health` - Database health check
@@ -109,18 +127,17 @@ plugins:
 Install optional plugins for extended functionality:
 
 ```bash
-# GitHub Projects V2 integration
-pip install taskr-plugin-github
-
 # Workflow definitions
 pip install taskr-plugin-skillflows
+
+# Supabase deployments
+pip install taskr-plugin-supabase
 ```
 
 Enable in config:
 ```yaml
 plugins:
   enabled:
-    - github
     - skillflows
 ```
 
