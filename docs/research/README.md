@@ -15,6 +15,12 @@ Technical research informing Taskr's design decisions.
 |----------|---------|
 | [transcription-glossary-pipeline.md](./transcription-glossary-pipeline.md) | Multi-pass AI pipeline for domain glossaries + Amazon Transcribe integration |
 
+## Workflow & Process
+
+| Document | Summary |
+|----------|---------|
+| [taskr-triage-workflow-case-study.md](./taskr-triage-workflow-case-study.md) | Case study: Using taskr_triage for rapid project cleanup (1.5 min) |
+
 ## Key Takeaways
 
 ### Dense Vectors Have Hard Limits
