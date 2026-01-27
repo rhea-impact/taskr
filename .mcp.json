@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "taskr": {
+      "command": "python",
+      "args": ["-m", "taskr_mcp"],
+      "cwd": "packages/taskr-mcp",
+      "env": {
+        "PYTHONPATH": "packages/taskr-core:packages/taskr-mcp"
+      }
+    }
+  }
+}
