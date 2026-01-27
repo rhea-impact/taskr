@@ -16,7 +16,9 @@
 
 ## Why Taskr?
 
-**Stop paying for SaaS to manage your projects.** Just use Taskr (free) and GitHub Projects/Issues (also free).
+**Stop paying for SaaS to manage your projects with teams.** No more Jira. No more Asana. No more Linear. Just use Taskr (free) and GitHub Projects/Issues (also free).
+
+The magic? **Your code and your tasks live together in the same place.** GitHub becomes your single source of truth—perfect for open-source projects, closed-source projects, or anything in between. AI loves when all the data lives in one place, and so will your team.
 
 Taskr automates Claude Code to create plans in GitHub, then update and follow those plans like a real software development team. Just say:
 
