@@ -9,6 +9,12 @@ Technical research informing Taskr's design decisions.
 | [embedding-limitations-theory.md](./embedding-limitations-theory.md) | Why dense vectors fundamentally cannot work at scale (Google DeepMind LIMIT paper) |
 | [hybrid-search-pgvector-rrf.md](./hybrid-search-pgvector-rrf.md) | Implementation guide for hybrid search with pgvector + RRF fusion |
 
+## Speech & Terminology
+
+| Document | Summary |
+|----------|---------|
+| [transcription-glossary-pipeline.md](./transcription-glossary-pipeline.md) | Multi-pass AI pipeline for domain glossaries + Amazon Transcribe integration |
+
 ## Key Takeaways
 
 ### Dense Vectors Have Hard Limits
