@@ -6,6 +6,9 @@ import pytest
 import sys
 from pathlib import Path
 
+# Configure pytest-asyncio
+pytest_plugins = ["pytest_asyncio"]
+
 # Add packages to path for testing
 packages_dir = Path(__file__).parent.parent / "packages"
 sys.path.insert(0, str(packages_dir / "taskr-core"))
