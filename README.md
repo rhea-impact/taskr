@@ -12,6 +12,26 @@
   <strong>AI-native task management for Claude Code and MCP-compatible agents.</strong>
 </p>
 
+---
+
+## Why Taskr?
+
+**Stop paying for SaaS to manage your projects.** Just use Taskr (free) and GitHub Projects/Issues (also free).
+
+Taskr automates Claude Code to create plans in GitHub, then update and follow those plans like a real software development team. Just say:
+
+> *"use taskr triage to ______"*
+
+...and whatever you need to get done, that's it. Taskr will set up the plan.
+
+**If Claude ever stops mid-task?** Just say "use taskr triage" again. Triage is designed to figure out where your project left off, keep the backlog clean, keep the project organized, and more.
+
+While this is just the start of what Taskr can do for teams, it's enough to **double or triple your Claude Code output starting today.**
+
+It's a low-opinionated way to keep projects organized using the best coding agent in the world—Claude Code—without getting in Claude's way. Use Claude Code how you love to use it, but invoke `taskr triage` whenever you need to make sure Claude is following the plan.
+
+---
+
 ## Features
 
 - **Task Management** - Create, track, and search tasks with full CRUD operations
