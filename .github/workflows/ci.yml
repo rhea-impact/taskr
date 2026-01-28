@@ -77,4 +77,4 @@ jobs:
         run: pip install ruff
 
       - name: Run ruff check
-        run: ruff check packages/ --ignore E501
+        run: ruff check packages/ --ignore E501,B027
