@@ -7,7 +7,7 @@
 #
 # Requirements:
 #   - Claude CLI installed
-#   - GITHUB_TOKEN env var set (for GitHub tools)
+#   - gh CLI authenticated (`gh auth login`) for GitHub tools
 
 set -e
 
@@ -24,6 +24,33 @@ NC='\033[0m' # No Color
 # Create results directory
 mkdir -p "$RESULTS_DIR"
 
+# Check prerequisites
+check_prerequisites() {
+    echo "Checking prerequisites..."
+
+    # Check for Claude CLI
+    if ! command -v claude &> /dev/null; then
+        echo -e "${RED}Error: Claude CLI not found. Install from: https://github.com/anthropics/claude-code${NC}"
+        exit 1
+    fi
+
+    # Check for gh CLI (optional but recommended)
+    if command -v gh &> /dev/null; then
+        if gh auth status &> /dev/null; then
+            echo -e "${GREEN}✓ gh CLI authenticated${NC}"
+            GH_AVAILABLE=true
+        else
+            echo -e "${YELLOW}! gh CLI installed but not authenticated. Run: gh auth login${NC}"
+            GH_AVAILABLE=false
+        fi
+    else
+        echo -e "${YELLOW}! gh CLI not found. GitHub tools will be limited.${NC}"
+        GH_AVAILABLE=false
+    fi
+
+    echo ""
+}
+
 # Create temporary MCP config for taskr
 MCP_CONFIG=$(cat <<EOF
 {
@@ -33,8 +60,7 @@ MCP_CONFIG=$(cat <<EOF
       "args": ["-m", "taskr_mcp"],
       "cwd": "$REPO_DIR/packages/taskr-mcp",
       "env": {
-        "PYTHONPATH": "$REPO_DIR/packages/taskr-core:$REPO_DIR/packages/taskr-mcp",
-        "GITHUB_TOKEN": "${GITHUB_TOKEN:-}"
+        "PYTHONPATH": "$REPO_DIR/packages/taskr-core:$REPO_DIR/packages/taskr-mcp"
       }
     }
   }
@@ -65,7 +91,12 @@ run_test() {
     fi
 }
 
-# Test functions
+# Test functions - Core (no GitHub required)
+test_health() {
+    run_test "health" \
+        "Use taskr_health to check database connectivity. Report the status."
+}
+
 test_devlog_add() {
     run_test "devlog_add" \
         "Use devlog_add to create a test entry with category='note', title='MCP Test', content='Testing the MCP server'. Return the devlog ID."
@@ -101,9 +132,19 @@ test_session_start() {
         "Use taskr_session_start with agent_id='test-agent' and context='MCP test session'. Return the session_id."
 }
 
-test_health() {
-    run_test "health" \
-        "Use taskr_health to check database connectivity. Report the status."
+# Test functions - GitHub (requires gh auth)
+test_github_auth() {
+    run_test "github_auth" \
+        "Use github_auth_check to verify GitHub authentication status. Report the method being used."
+}
+
+test_github_project_items() {
+    if [ "$GH_AVAILABLE" != "true" ]; then
+        echo -e "${YELLOW}SKIPPED${NC}: github_project_items (gh not authenticated)"
+        return 0
+    fi
+    run_test "github_project_items" \
+        "Use github_project_items to list items in rhea-impact org, project number 1. List the first 3 items."
 }
 
 test_triage() {
@@ -111,17 +152,9 @@ test_triage() {
         "Use taskr_triage with request='Test triage functionality'. Summarize the recommended workflow."
 }
 
-# GitHub tools (require GITHUB_TOKEN)
-test_github_project_items() {
-    if [ -z "$GITHUB_TOKEN" ]; then
-        echo -e "${YELLOW}SKIPPED${NC}: github_project_items (no GITHUB_TOKEN)"
-        return 0
-    fi
-    run_test "github_project_items" \
-        "Use github_project_items to list items in rhea-impact org, project number 1. List the first 3 items."
-}
-
 # Run tests
+check_prerequisites
+
 echo "========================================"
 echo "Taskr MCP Integration Tests"
 echo "========================================"
@@ -143,7 +176,7 @@ if [ $# -gt 0 ]; then
         fi
     else
         echo "Unknown test: $1"
-        echo "Available tests: devlog_add, devlog_list, devlog_search, task_create, task_list, task_search, session_start, health, triage, github_project_items"
+        echo "Available tests: health, devlog_add, devlog_list, devlog_search, task_create, task_list, task_search, session_start, github_auth, github_project_items, triage"
         exit 1
     fi
 else
@@ -157,8 +190,9 @@ else
         "task_list"
         "task_search"
         "session_start"
-        "triage"
+        "github_auth"
         "github_project_items"
+        "triage"
     )
 
     for test in "${tests[@]}"; do

@@ -16,6 +16,41 @@ Why? Projects V2 are **organization-level**, not repo-level. The GitHub MCP focu
 
 **Why This Matters**: GitHub Projects is free and built into your code workflow. With Taskr, Claude can manage your entire project board without leaving the conversation.
 
+## Authentication
+
+Taskr uses the `gh` CLI for authentication (recommended) with fallback to `GITHUB_TOKEN` for CI.
+
+### Option 1: gh CLI (Recommended)
+
+One-time setup, secure token storage:
+
+```bash
+# Install gh CLI
+brew install gh      # macOS
+# or: apt install gh  # Ubuntu
+# or: winget install gh  # Windows
+
+# Authenticate (opens browser)
+gh auth login
+```
+
+That's it. Taskr auto-detects `gh` and uses it for all GitHub operations.
+
+### Option 2: GITHUB_TOKEN (CI only)
+
+For CI pipelines where `gh` isn't practical:
+
+```bash
+export GITHUB_TOKEN="ghp_..."
+```
+
+### Check Status
+
+```python
+github_auth_check()
+# Returns: {"authenticated": True, "method": "gh CLI", "message": "..."}
+```
+
 ## Architecture
 
 ```
@@ -31,6 +66,13 @@ Why? Projects V2 are **organization-level**, not repo-level. The GitHub MCP focu
 │ • Search            │ • Project items       │
 │ • Comments          │                       │
 └─────────────────────┴───────────────────────┘
+         │                      │
+         └──────────┬───────────┘
+                    ▼
+            ┌──────────────┐
+            │   gh CLI     │  ← Handles auth securely
+            │  (or token)  │
+            └──────────────┘
 ```
 
 Use **both** servers together for complete GitHub integration.
@@ -39,6 +81,7 @@ Use **both** servers together for complete GitHub integration.
 
 | Tool | Description |
 |------|-------------|
+| `github_auth_check` | Verify authentication status |
 | `github_project_create` | Create a new Project V2 |
 | `github_project_items` | List items in a project |
 | `github_project_add_item` | Add issue/PR to project |
@@ -48,23 +91,6 @@ Use **both** servers together for complete GitHub integration.
 | `github_pr_create` | Create PR with issue linking |
 | `github_get_issue_id` | Get node ID for an issue |
 | `github_get_org_id` | Get node ID for org/user |
-
-## Setup
-
-Taskr needs a GitHub token with these scopes:
-- `repo` - Access repositories
-- `project` - Access Projects V2
-
-```bash
-export GITHUB_TOKEN="ghp_..."
-```
-
-Or in `~/.taskr/config.yaml`:
-
-```yaml
-github:
-  token_env: GITHUB_TOKEN
-```
 
 ## Usage Examples
 
@@ -241,23 +267,24 @@ Your Claude Code config should have both:
 {
   "mcpServers": {
     "taskr": {
-      "command": "taskr-mcp",
-      "env": {
-        "GITHUB_TOKEN": "ghp_..."
-      }
+      "command": "taskr-mcp"
     },
     "github": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "ghp_..."
-      }
+      "args": ["-y", "@modelcontextprotocol/server-github"]
     }
   }
 }
 ```
 
-Use the same token for both (needs `repo` + `project` scopes).
+**No tokens in config!** Both servers use `gh` CLI for auth:
+
+```bash
+# One-time setup
+gh auth login
+```
+
+For CI, both support `GITHUB_TOKEN` env var as fallback.
 
 ## Related Modules
 

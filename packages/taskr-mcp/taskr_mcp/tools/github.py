@@ -6,31 +6,141 @@ Core GitHub tools that are essential to the taskr workflow:
 - Issue creation with project linking
 - PR creation with issue linking
 
-Requires GITHUB_TOKEN environment variable.
+Authentication (in order of preference):
+1. gh CLI (recommended) - run `gh auth login` once
+2. GITHUB_TOKEN env var - for CI/automation
 """
 
+import json
+import logging
 import os
+import shutil
+import subprocess
 from typing import Optional, List
 
-import httpx
+logger = logging.getLogger(__name__)
 
-GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
-GITHUB_GRAPHQL_URL = "https://api.github.com/graphql"
+# Cache for gh availability check
+_gh_available: Optional[bool] = None
 
 
-def graphql_request(query: str, variables: dict) -> dict:
-    """Execute a GitHub GraphQL request."""
-    if not GITHUB_TOKEN:
-        raise ValueError("GITHUB_TOKEN environment variable not set")
+def gh_available() -> bool:
+    """Check if gh CLI is installed and authenticated."""
+    global _gh_available
+    if _gh_available is not None:
+        return _gh_available
 
-    headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
-        "Content-Type": "application/json",
-    }
+    # Check if gh is installed
+    if not shutil.which("gh"):
+        logger.debug("gh CLI not found in PATH")
+        _gh_available = False
+        return False
+
+    # Check if gh is authenticated
+    try:
+        result = subprocess.run(
+            ["gh", "auth", "status"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        _gh_available = result.returncode == 0
+        if _gh_available:
+            logger.debug("gh CLI authenticated and ready")
+        else:
+            logger.debug(f"gh CLI not authenticated: {result.stderr}")
+    except Exception as e:
+        logger.debug(f"gh auth check failed: {e}")
+        _gh_available = False
+
+    return _gh_available
+
+
+def gh_api_graphql(query: str, variables: dict) -> dict:
+    """Execute a GraphQL query using gh CLI."""
+    # Build the gh api graphql command
+    cmd = [
+        "gh", "api", "graphql",
+        "-f", f"query={query}",
+    ]
+
+    # Add variables
+    for key, value in variables.items():
+        if isinstance(value, int):
+            cmd.extend(["-F", f"{key}={value}"])
+        else:
+            cmd.extend(["-f", f"{key}={value}"])
+
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    if result.returncode != 0:
+        raise ValueError(f"gh api error: {result.stderr}")
+
+    response = json.loads(result.stdout)
+
+    if "errors" in response:
+        raise ValueError(f"GraphQL error: {response['errors']}")
+
+    return response.get("data", {})
+
+
+def gh_run(args: List[str], json_output: bool = True) -> dict:
+    """Run a gh CLI command and return the result."""
+    cmd = ["gh"] + args
+    if json_output and "--json" not in args:
+        # Many gh commands support --json for structured output
+        pass  # Let caller handle JSON flag
+
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    if result.returncode != 0:
+        raise ValueError(f"gh error: {result.stderr}")
+
+    if json_output and result.stdout.strip():
+        return json.loads(result.stdout)
+
+    return {"output": result.stdout}
+
+
+# Fallback to direct API if gh not available
+def _get_token() -> Optional[str]:
+    """Get GitHub token from environment (fallback when gh not available)."""
+    return os.environ.get("GITHUB_TOKEN")
+
+
+def _direct_api_available() -> bool:
+    """Check if direct API access is available via GITHUB_TOKEN."""
+    return bool(_get_token())
+
+
+def _direct_graphql(query: str, variables: dict) -> dict:
+    """Execute GraphQL via direct HTTP (fallback)."""
+    import httpx
+
+    token = _get_token()
+    if not token:
+        raise ValueError(
+            "GitHub authentication required. Either:\n"
+            "  1. Run: gh auth login (recommended)\n"
+            "  2. Set GITHUB_TOKEN environment variable"
+        )
 
     response = httpx.post(
-        GITHUB_GRAPHQL_URL,
-        headers=headers,
+        "https://api.github.com/graphql",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
         json={"query": query, "variables": variables},
         timeout=30.0,
     )
@@ -41,6 +151,14 @@ def graphql_request(query: str, variables: dict) -> dict:
         raise ValueError(f"GraphQL error: {result['errors']}")
 
     return result.get("data", {})
+
+
+def graphql_request(query: str, variables: dict) -> dict:
+    """Execute a GraphQL request using gh CLI or direct API."""
+    if gh_available():
+        return gh_api_graphql(query, variables)
+    else:
+        return _direct_graphql(query, variables)
 
 
 def get_owner_id(login: str) -> tuple[str, str]:
@@ -75,8 +193,40 @@ def get_owner_id(login: str) -> tuple[str, str]:
     raise ValueError(f"Could not find organization or user: {login}")
 
 
+def github_auth_status() -> dict:
+    """Check GitHub authentication status."""
+    if gh_available():
+        return {
+            "authenticated": True,
+            "method": "gh CLI",
+            "message": "Authenticated via gh CLI (recommended)",
+        }
+    elif _direct_api_available():
+        return {
+            "authenticated": True,
+            "method": "GITHUB_TOKEN",
+            "message": "Authenticated via GITHUB_TOKEN env var",
+        }
+    else:
+        return {
+            "authenticated": False,
+            "method": None,
+            "message": "Not authenticated. Run: gh auth login",
+        }
+
+
 def register_github_tools(mcp):
     """Register GitHub tools with the MCP server."""
+
+    @mcp.tool()
+    def github_auth_check() -> dict:
+        """
+        Check GitHub authentication status.
+
+        Returns whether taskr can access GitHub and which auth method is being used.
+        Recommended: Use `gh auth login` for secure, browser-based authentication.
+        """
+        return github_auth_status()
 
     @mcp.tool()
     def github_project_create(title: str, org: str) -> dict:
@@ -308,35 +458,68 @@ def register_github_tools(mcp):
         Returns:
             Issue details including number, url, and project item id
         """
-        if not GITHUB_TOKEN:
-            return {"error": "GITHUB_TOKEN environment variable not set"}
-
         try:
-            # Step 1: Create the issue via REST API
-            headers = {
-                "Authorization": f"Bearer {GITHUB_TOKEN}",
-                "Accept": "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-            }
+            # Step 1: Create the issue using gh CLI or REST API
+            if gh_available():
+                # Use gh issue create
+                cmd = [
+                    "issue", "create",
+                    "--repo", f"{owner}/{repo}",
+                    "--title", title,
+                ]
+                if body:
+                    cmd.extend(["--body", body])
+                if labels:
+                    for label in labels:
+                        cmd.extend(["--label", label])
+                if assignees:
+                    for assignee in assignees:
+                        cmd.extend(["--assignee", assignee])
 
-            issue_data = {"title": title}
-            if body:
-                issue_data["body"] = body
-            if labels:
-                issue_data["labels"] = labels
-            if assignees:
-                issue_data["assignees"] = assignees
+                # Get the issue URL from gh output
+                result = subprocess.run(
+                    ["gh"] + cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                if result.returncode != 0:
+                    raise ValueError(f"gh issue create failed: {result.stderr}")
 
-            response = httpx.post(
-                f"https://api.github.com/repos/{owner}/{repo}/issues",
-                headers=headers,
-                json=issue_data,
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            issue = response.json()
-            issue_number = issue["number"]
-            issue_url = issue["html_url"]
+                issue_url = result.stdout.strip()
+                # Extract issue number from URL
+                issue_number = int(issue_url.split("/")[-1])
+            else:
+                # Fallback to REST API
+                import httpx
+                token = _get_token()
+                if not token:
+                    return {"error": "GitHub authentication required. Run: gh auth login"}
+
+                headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                }
+
+                issue_data = {"title": title}
+                if body:
+                    issue_data["body"] = body
+                if labels:
+                    issue_data["labels"] = labels
+                if assignees:
+                    issue_data["assignees"] = assignees
+
+                response = httpx.post(
+                    f"https://api.github.com/repos/{owner}/{repo}/issues",
+                    headers=headers,
+                    json=issue_data,
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                issue = response.json()
+                issue_number = issue["number"]
+                issue_url = issue["html_url"]
 
             # Step 2: Get the issue's node ID via GraphQL
             query = """
@@ -371,8 +554,6 @@ def register_github_tools(mcp):
                 "project_item_id": project_item_id,
                 "message": f"Created issue #{issue_number} and added to project",
             }
-        except httpx.HTTPStatusError as e:
-            return {"error": f"GitHub API error: {e.response.status_code} - {e.response.text}"}
         except Exception as e:
             return {"error": str(e)}
 
@@ -514,9 +695,6 @@ def register_github_tools(mcp):
         Returns:
             PR details including number, url, and project info if linked
         """
-        if not GITHUB_TOKEN:
-            return {"error": "GITHUB_TOKEN environment variable not set"}
-
         try:
             # Build PR body with issue link
             pr_body = body or ""
@@ -527,31 +705,61 @@ def register_github_tools(mcp):
 
             pr_body += "\n\n---\n*Created with [taskr](https://github.com/rhea-impact/taskr)*"
 
-            # Create the PR via REST API
-            headers = {
-                "Authorization": f"Bearer {GITHUB_TOKEN}",
-                "Accept": "application/vnd.github+json",
-                "X-GitHub-Api-Version": "2022-11-28",
-            }
+            # Create the PR using gh CLI or REST API
+            if gh_available():
+                cmd = [
+                    "pr", "create",
+                    "--repo", f"{owner}/{repo}",
+                    "--title", title,
+                    "--body", pr_body,
+                    "--head", head,
+                    "--base", base,
+                ]
+                if draft:
+                    cmd.append("--draft")
 
-            pr_data = {
-                "title": title,
-                "head": head,
-                "base": base,
-                "body": pr_body,
-                "draft": draft,
-            }
+                result = subprocess.run(
+                    ["gh"] + cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                )
+                if result.returncode != 0:
+                    raise ValueError(f"gh pr create failed: {result.stderr}")
 
-            response = httpx.post(
-                f"https://api.github.com/repos/{owner}/{repo}/pulls",
-                headers=headers,
-                json=pr_data,
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            pr = response.json()
-            pr_number = pr["number"]
-            pr_url = pr["html_url"]
+                pr_url = result.stdout.strip()
+                pr_number = int(pr_url.split("/")[-1])
+            else:
+                # Fallback to REST API
+                import httpx
+                token = _get_token()
+                if not token:
+                    return {"error": "GitHub authentication required. Run: gh auth login"}
+
+                headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                }
+
+                pr_data = {
+                    "title": title,
+                    "head": head,
+                    "base": base,
+                    "body": pr_body,
+                    "draft": draft,
+                }
+
+                response = httpx.post(
+                    f"https://api.github.com/repos/{owner}/{repo}/pulls",
+                    headers=headers,
+                    json=pr_data,
+                    timeout=30.0,
+                )
+                response.raise_for_status()
+                pr = response.json()
+                pr_number = pr["number"]
+                pr_url = pr["html_url"]
 
             result = {
                 "pr_number": pr_number,
@@ -617,7 +825,5 @@ def register_github_tools(mcp):
 
             return result
 
-        except httpx.HTTPStatusError as e:
-            return {"error": f"GitHub API error: {e.response.status_code} - {e.response.text}"}
         except Exception as e:
             return {"error": str(e)}
