@@ -28,7 +28,7 @@ class TestMCPServerStartup:
     def test_server_has_tools(self):
         """Test server registers expected tools."""
         from taskr_mcp.server import mcp
-        tool_names = list(mcp._tools.keys())
+        tool_names = list(mcp._tool_manager._tools.keys())
 
         # Core tools
         assert 'taskr_health' in tool_names
@@ -44,7 +44,7 @@ class TestMCPServerStartup:
     def test_server_tool_count(self):
         """Test server has reasonable number of tools."""
         from taskr_mcp.server import mcp
-        tool_count = len(mcp._tools)
+        tool_count = len(mcp._tool_manager._tools)
 
         assert tool_count >= 15, f'Expected at least 15 tools, got {tool_count}'
 
