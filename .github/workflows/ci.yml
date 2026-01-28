@@ -36,8 +36,7 @@ jobs:
       - name: Test MCP server starts
         run: |
           python -c "
-          from taskr_mcp.server import create_server
-          mcp = create_server()
+          from taskr_mcp.server import mcp
           print(f'MCP server created with {len(mcp._tools)} tools')
           assert len(mcp._tools) > 10, 'Expected at least 10 tools'
           print('Server startup test passed')

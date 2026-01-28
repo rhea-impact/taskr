@@ -22,16 +22,12 @@ class TestMCPServerStartup:
 
     def test_server_creates(self):
         """Test server creation."""
-        from taskr_mcp.server import create_server
-
-        mcp = create_server()
+        from taskr_mcp.server import mcp
         assert mcp is not None
 
     def test_server_has_tools(self):
         """Test server registers expected tools."""
-        from taskr_mcp.server import create_server
-
-        mcp = create_server()
+        from taskr_mcp.server import mcp
         tool_names = list(mcp._tools.keys())
 
         # Core tools
@@ -47,9 +43,7 @@ class TestMCPServerStartup:
 
     def test_server_tool_count(self):
         """Test server has reasonable number of tools."""
-        from taskr_mcp.server import create_server
-
-        mcp = create_server()
+        from taskr_mcp.server import mcp
         tool_count = len(mcp._tools)
 
         assert tool_count >= 15, f'Expected at least 15 tools, got {tool_count}'
