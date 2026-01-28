@@ -16,7 +16,7 @@ import logging
 import os
 import shutil
 import subprocess
-from typing import Optional, List
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +89,7 @@ def gh_api_graphql(query: str, variables: dict) -> dict:
     return response.get("data", {})
 
 
-def gh_run(args: List[str], json_output: bool = True) -> dict:
+def gh_run(args: list[str], json_output: bool = True) -> dict:
     """Run a gh CLI command and return the result."""
     cmd = ["gh"] + args
     if json_output and "--json" not in args:
@@ -437,8 +437,8 @@ def register_github_tools(mcp):
         title: str,
         project_id: str,
         body: Optional[str] = None,
-        labels: Optional[List[str]] = None,
-        assignees: Optional[List[str]] = None,
+        labels: Optional[list[str]] = None,
+        assignees: Optional[list[str]] = None,
     ) -> dict:
         """
         Create a GitHub issue AND add it to a project in one call.
